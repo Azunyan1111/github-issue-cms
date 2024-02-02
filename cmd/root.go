@@ -3,7 +3,7 @@ package cmd
 import (
 	"os"
 
-	"github.com/rokuosan/github-issue-cms/internal"
+	"github.com/Azunyan1111/github-issue-cms/internal"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

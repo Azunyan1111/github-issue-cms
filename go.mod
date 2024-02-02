@@ -1,10 +1,10 @@
 module github.com/Azunyan1111/github-issue-cms
 
-go 1.20
+go 1.21
 
 require (
 	github.com/google/go-github/v56 v56.0.0
-	github.com/rokuosan/github-issue-cms v0.2.3
+	github.com/Azunyan1111/github-issue-cms v0.2.3
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.18.2
 	go.uber.org/zap v1.26.0

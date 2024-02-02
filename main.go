@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/rokuosan/github-issue-cms/cmd"
-	"github.com/rokuosan/github-issue-cms/internal"
+	"github.com/Azunyan1111/github-issue-cms/cmd"
+	"github.com/Azunyan1111/github-issue-cms/internal"
 )
 
 func main() {
