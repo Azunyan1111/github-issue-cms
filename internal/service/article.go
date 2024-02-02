@@ -97,7 +97,7 @@ func (as ArticleService) IssueToArticle(issue *github.Issue) (*model.Article, er
 	for i, m := range match {
 		url := m[1]
 		before := m[0]
-		replaced := "![" + url + "](images/" + id + "/" + fmt.Sprintf("%d", i) + ".png)"
+		replaced := "![" + url + "](/images/" + id + "/" + fmt.Sprintf("%d", i) + ".png)"
 
 		// Skip if already replaced
 		if strings.Contains(content, replaced) {
