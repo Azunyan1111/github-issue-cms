@@ -94,6 +94,26 @@ func IssueToArticle(issue *github.Issue) *Article {
 		content = strings.Replace(content, frontMatter[0], "", 1)
 	}
 
+	// Check front matter exists
+	if len(frontMatter) == 0 {
+		Logger.Error("front matter not found or front matter missing in first line")
+		Logger.Errorf("issue URL: %s", issue.GetHTMLURL())
+		panic("front matter not found")
+	}
+
+	// customAuthor returns the author name from the front matter.
+	customAuthor := func() string {
+		for _, s := range frontMatter {
+			re := regexp.MustCompile(`author: ['"](.*)['"]`)
+			match := re.FindStringSubmatch(s)
+			if len(match) > 0 {
+				return match[1]
+			}
+		}
+		// Default to the issue author if not found in the front matter.
+		return issue.GetUser().GetLogin()
+	}
+
 	// Remove empty lines at the beginning
 	content = strings.TrimLeft(content, "\n")
 
@@ -138,7 +158,7 @@ func IssueToArticle(issue *github.Issue) *Article {
 
 	// Create article
 	return &Article{
-		Author:           issue.GetUser().GetLogin(),
+		Author:           customAuthor(),
 		Title:            issue.GetTitle(),
 		Date:             issue.GetCreatedAt().Format("2006-01-02T15:04:05Z"),
 		Category:         issue.GetMilestone().GetTitle(),
