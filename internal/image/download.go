@@ -1,7 +1,8 @@
-package internal
+package image
 
 import (
 	"fmt"
+	"github.com/Azunyan1111/github-issue-cms/internal/config"
 	"io"
 	"net/http"
 	"os"
@@ -11,13 +12,13 @@ import (
 // DownloadImage downloads an image from the URL and save it to the local file system.
 func DownloadImage(url string, id string, number int) {
 	// Expect like this: ./static/images/
-	imagesPath := ImagesPath
+	imagesPath := config.ImagesPath
 	base := filepath.Join(imagesPath, id)
 	dest := filepath.Join(base, fmt.Sprintf("%d", number)+".png")
 
 	// Create directory
 	if _, err := os.Stat(base); os.IsNotExist(err) {
-		Logger.Info("Creating directory: " + base)
+		config.Logger.Info("Creating directory: " + base)
 		err := os.MkdirAll(base, 0777)
 		if err != nil {
 			panic(err)
@@ -25,7 +26,7 @@ func DownloadImage(url string, id string, number int) {
 	}
 
 	// Prepare a new file
-	Logger.Info("Downloading image: " + url)
+	config.Logger.Info("Downloading image: " + url)
 	file, err := os.Create(dest)
 	if err != nil {
 		panic(err)
@@ -37,7 +38,7 @@ func DownloadImage(url string, id string, number int) {
 	if err != nil {
 		panic(err)
 	}
-	req.Header.Set("Authorization", "token "+GitHubToken)
+	req.Header.Set("Authorization", "token "+config.GitHubToken)
 	client := new(http.Client)
 	resp, err := client.Do(req)
 	if err != nil {
@@ -48,7 +49,7 @@ func DownloadImage(url string, id string, number int) {
 	// Check response
 	contentType := resp.Header.Get("Content-Type")
 	if resp.StatusCode != 200 || contentType != "image/png" {
-		Logger.Error(fmt.Sprintf("Response: %d %s", resp.StatusCode, contentType))
+		config.Logger.Error(fmt.Sprintf("Response: %d %s", resp.StatusCode, contentType))
 
 		// Remove the file
 		err := os.Remove(dest)
@@ -58,12 +59,12 @@ func DownloadImage(url string, id string, number int) {
 
 		return
 	}
-	Logger.Info(fmt.Sprintf("Response: %d %s", resp.StatusCode, contentType))
+	config.Logger.Info(fmt.Sprintf("Response: %d %s", resp.StatusCode, contentType))
 
 	// Write the body to file
 	written, err := io.Copy(file, resp.Body)
 	if err != nil {
 		panic(err)
 	}
-	Logger.Info("Downloaded image: " + dest + " (" + fmt.Sprintf("%d", written) + " bytes)")
+	config.Logger.Info("Downloaded image: " + dest + " (" + fmt.Sprintf("%d", written) + " bytes)")
 }

@@ -15,7 +15,7 @@ Issues are treated as articles.
 ### 1. Install this application
 
 ```bash
-$ go install github.com/Azunyan1111/github-issue-cms@latest
+$ go install github.com/Azunyan1111/github-gh-cms@latest
 ```
 
 ### 2. Create Config file
@@ -37,7 +37,7 @@ hugo:
 Run this application with your GitHub Access Token
 
 ```bash
-$ github-issue-cms --token="YOUR_GITHUB_TOKEN"
+$ github-gh-cms generate --token="YOUR_GITHUB_TOKEN"
 ```
 
 If your repository has issues and attached images, they will be exported like this tree.
@@ -95,10 +95,10 @@ jobs:
         go-version: '1.21.4'
 
     - name: Install
-      run: go install github.com/Azunyan1111/github-issue-cms@latest
+      run: go install github.com/Azunyan1111/github-gh-cms@latest
 
     - name: Generate
-      run: github-issue-cms --token=${{ secrets.GH_TOKEN }}
+      run: github-gh-cms --token=${{ secrets.GH_TOKEN }}
 
     - name: Auto Commit
       uses: stefanzweifel/git-auto-commit-action@v4
