@@ -1,4 +1,4 @@
-package internal
+package model
 
 // Article is the article for Hugo.
 type Article struct {

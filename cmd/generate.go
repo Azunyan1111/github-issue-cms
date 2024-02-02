@@ -1,9 +1,12 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"github.com/Azunyan1111/github-issue-cms/internal/config"
+	"github.com/Azunyan1111/github-issue-cms/internal/pkg/gh"
+	"github.com/Azunyan1111/github-issue-cms/internal/service"
 
-	"github.com/Azunyan1111/github-issue-cms/internal"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -17,7 +20,11 @@ This command will get issues from GitHub and create articles from them.
 The articles will be saved in the "content" directory.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Initialize
-		logger := internal.Logger
+		logger := config.Logger
+		config.SetupGitHubClient()
+		githubClient := gh.NewCustomGitHubClient(config.GitHubClient, &logger)
+		ctx := context.Background()
+		svc := service.NewService(&logger, config.ImagesPath, config.GitHubToken)
 
 		username := viper.GetString("github.username")
 		repository := viper.GetString("github.repository")
@@ -30,10 +37,12 @@ The articles will be saved in the "content" directory.`,
 
 		// Get issues
 		logger.Info("Getting issues...")
-		issues := internal.GetIssues()
-		if issues == nil {
+		issues, err := githubClient.GetIssues(ctx, username, repository)
+		if err != nil {
+			logger.Error("Failed to get issues")
 			return
-		} else if len(issues) == 0 {
+		}
+		if len(issues) == 0 {
 			logger.Info("No issues found")
 			return
 		} else {
@@ -43,9 +52,15 @@ The articles will be saved in the "content" directory.`,
 		// Create articles
 		logger.Info("Creating articles...")
 		for _, issue := range issues {
-			article := internal.IssueToArticle(issue)
+			article, err := svc.IssueToArticle(issue)
+			if err != nil {
+				logger.Errorf("Failed to create article: %s", err)
+			}
 			if article != nil {
-				internal.ExportArticle(article, fmt.Sprintf("%d", issue.GetID()))
+				err := svc.ExportArticle(article, fmt.Sprintf("%d", issue.GetID()))
+				if err != nil {
+					logger.Errorf("Failed to export article: %s", err)
+				}
 			}
 		}
 
@@ -56,7 +71,6 @@ func init() {
 	rootCmd.AddCommand(generateCmd)
 
 	// GitHub Token
-	generateCmd.Flags().StringVarP(&internal.GitHubToken, "token", "t", "", "GitHub API Token")
+	generateCmd.Flags().StringVarP(&config.GitHubToken, "token", "t", "", "GitHub API Token")
 	_ = generateCmd.MarkFlagRequired("token")
-
 }

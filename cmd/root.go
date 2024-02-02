@@ -1,18 +1,16 @@
 package cmd
 
 import (
+	"github.com/Azunyan1111/github-issue-cms/internal/config"
 	"os"
 
-	"github.com/Azunyan1111/github-issue-cms/internal"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "github-issue-cms",
+	Use:   "github-gh-cms",
 	Short: "Generate articles from GitHub issues for Hugo",
-	// Run: func(cmd *cobra.Command, args []string) {
-	// },
 }
 
 func Execute() {
@@ -23,8 +21,6 @@ func Execute() {
 }
 
 func init() {
-	internal.SetupLogger()
-
 	// Read config file
 	viper.SetConfigName("gic.config")
 	viper.SetConfigType("yaml")
@@ -35,5 +31,7 @@ func init() {
 	}
 
 	// Debug
-	rootCmd.PersistentFlags().BoolVarP(&internal.Debug, "debug", "d", false, "Debug mode")
+	rootCmd.PersistentFlags().BoolVarP(&config.Debug, "debug", "d", true, "Debug mode")
+
+	config.SetupLogger()
 }

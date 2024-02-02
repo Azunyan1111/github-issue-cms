@@ -1,4 +1,4 @@
-package internal
+package config
 
 import (
 	"path/filepath"
@@ -31,6 +31,7 @@ func SetupLogger() {
 	logger, _ := config.Build()
 	defer logger.Sync()
 	Logger = *logger.Sugar()
+	Logger.Debug("Logger Setup")
 }
 
 func SetupGitHubClient() {
