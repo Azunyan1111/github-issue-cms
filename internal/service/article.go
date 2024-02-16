@@ -156,10 +156,43 @@ func (as ArticleService) downloadImage(url string, articleID string, filename st
 		return nil
 	}
 	as.Logger.Info("Downloading image: " + url)
+
+	// Download image
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return errors.Wrap(err, "failed to create request")
+	}
+	req.Header.Set("Authorization", "token "+as.GitHubToken)
+	client := new(http.Client)
+	resp, err := client.Do(req)
+	if err != nil {
+		return errors.Wrap(err, "failed to get response")
+	}
+	defer resp.Body.Close()
+
+	// Check response
+	var extension string
+	contentType := resp.Header.Get("Content-Type")
+	switch contentType {
+	case "image/png":
+		extension = ".png"
+	case "image/jpeg":
+		extension = ".jpg"
+	case "image/gif":
+		extension = ".gif"
+	default:
+		return errors.New("unsupported content type")
+	}
+	if resp.StatusCode != 200 {
+		as.Logger.Error(fmt.Sprintf("Response: %d %s", resp.StatusCode, contentType))
+		return errors.New("response error")
+	}
+	as.Logger.Info(fmt.Sprintf("Response: %d %s", resp.StatusCode, contentType))
+
 	// Expect like this: ./static/images/{articleID}/{filename}.png
 	imagesPath := as.ImagePath
 	base := filepath.Join(imagesPath, articleID)
-	dest := filepath.Join(base, fmt.Sprintf("%v", filename)+".png") // TODO:webp
+	dest := filepath.Join(base, fmt.Sprintf("%v", filename)+extension)
 
 	// Create directory
 	if _, err := os.Stat(base); os.IsNotExist(err) {
@@ -177,39 +210,11 @@ func (as ArticleService) downloadImage(url string, articleID string, filename st
 	}
 
 	// Prepare a new file
-	as.Logger.Info("Downloading image: " + url)
 	file, err := os.Create(dest)
 	if err != nil {
 		return errors.Wrap(err, "failed to create file")
 	}
 	defer file.Close()
-
-	// Download image
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return errors.Wrap(err, "failed to create request")
-	}
-	req.Header.Set("Authorization", "token "+as.GitHubToken)
-	client := new(http.Client)
-	resp, err := client.Do(req)
-	if err != nil {
-		return errors.Wrap(err, "failed to get response")
-	}
-	defer resp.Body.Close()
-
-	// Check response
-	contentType := resp.Header.Get("Content-Type")
-	if resp.StatusCode != 200 || contentType != "image/png" {
-		as.Logger.Error(fmt.Sprintf("Response: %d %s", resp.StatusCode, contentType))
-
-		// Remove the file
-		err := os.Remove(dest)
-		if err != nil {
-			return errors.Wrap(err, "failed to remove file")
-		}
-		return errors.New("response error")
-	}
-	as.Logger.Info(fmt.Sprintf("Response: %d %s", resp.StatusCode, contentType))
 
 	// Write the body to file
 	written, err := io.Copy(file, resp.Body)
