@@ -122,6 +122,10 @@ func (as ArticleService) IssueToArticle(issue *github.Issue) (*model.Article, er
 		before := m[0]
 		replaced := "![" + alt + "](images/" + id + "/" + fmt.Sprintf("%d", i) + ".png)"
 
+		if strings.Contains(url, "facebook.com") {
+			continue
+		}
+
 		fmt.Println("Replace: " + url)
 		err := as.downloadImage(url, id, fmt.Sprint(i))
 		if err != nil {
