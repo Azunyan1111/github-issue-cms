@@ -122,10 +122,6 @@ func (as ArticleService) IssueToArticle(issue *github.Issue) (*model.Article, er
 		before := m[0]
 		replaced := "![" + alt + "](images/" + id + "/" + fmt.Sprintf("%d", i) + ".png)"
 
-		if strings.Contains(url, "facebook.com") {
-			continue
-		}
-
 		fmt.Println("Replace: " + url)
 		err := as.downloadImage(url, id, fmt.Sprint(i))
 		if err != nil {
@@ -156,6 +152,9 @@ func (as ArticleService) IssueToArticle(issue *github.Issue) (*model.Article, er
 
 // DownloadImage downloads an image from the URL and save it to the local file system.
 func (as ArticleService) downloadImage(url string, articleID string, filename string) error {
+	if strings.Contains(url, "facebook.com") {
+		return nil
+	}
 	as.Logger.Info("Downloading image: " + url)
 	// Expect like this: ./static/images/{articleID}/{filename}.png
 	imagesPath := as.ImagePath
