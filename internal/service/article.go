@@ -105,10 +105,11 @@ func (as ArticleService) IssueToArticle(issue *github.Issue) (*model.Article, er
 		}
 
 		// Download image
-		err := as.downloadImage(url, id, fmt.Sprint(i))
+		contentType, err := as.downloadImage(url, id, fmt.Sprint(i))
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to download image")
 		}
+		replaced = fmt.Sprintf("![%s](/images/%s/%d%s)", url, id, i, contentType)
 
 		// Replace url to local path
 		content = strings.Replace(content, before, replaced, -1)
@@ -122,11 +123,11 @@ func (as ArticleService) IssueToArticle(issue *github.Issue) (*model.Article, er
 		before := m[0]
 		replaced := "![" + alt + "](images/" + id + "/" + fmt.Sprintf("%d", i) + ".png)"
 
-		fmt.Println("Replace: " + url)
-		err := as.downloadImage(url, id, fmt.Sprint(i))
+		contentType, err := as.downloadImage(url, id, fmt.Sprint(i))
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to download image")
 		}
+		replaced = fmt.Sprintf("![%s](/images/%s/%d%s)", url, id, i, contentType)
 
 		content = strings.Replace(content, before, replaced, -1)
 	}
@@ -151,22 +152,22 @@ func (as ArticleService) IssueToArticle(issue *github.Issue) (*model.Article, er
 }
 
 // DownloadImage downloads an image from the URL and save it to the local file system.
-func (as ArticleService) downloadImage(url string, articleID string, filename string) error {
+func (as ArticleService) downloadImage(url string, articleID string, filename string) (string, error) {
 	if strings.Contains(url, "facebook.com") {
-		return nil
+		return "", nil
 	}
 	as.Logger.Info("Downloading image: " + url)
 
 	// Download image
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return errors.Wrap(err, "failed to create request")
+		return "", errors.Wrap(err, "failed to create request")
 	}
 	req.Header.Set("Authorization", "token "+as.GitHubToken)
 	client := new(http.Client)
 	resp, err := client.Do(req)
 	if err != nil {
-		return errors.Wrap(err, "failed to get response")
+		return "", errors.Wrap(err, "failed to get response")
 	}
 	defer resp.Body.Close()
 
@@ -181,11 +182,11 @@ func (as ArticleService) downloadImage(url string, articleID string, filename st
 	case "image/gif":
 		extension = ".gif"
 	default:
-		return errors.New("unsupported content type")
+		return "", errors.New("unsupported content type")
 	}
 	if resp.StatusCode != 200 {
 		as.Logger.Error(fmt.Sprintf("Response: %d %s", resp.StatusCode, contentType))
-		return errors.New("response error")
+		return "", errors.New("response error")
 	}
 	as.Logger.Info(fmt.Sprintf("Response: %d %s", resp.StatusCode, contentType))
 
@@ -199,30 +200,30 @@ func (as ArticleService) downloadImage(url string, articleID string, filename st
 		as.Logger.Info("Creating directory: " + base)
 		err := os.MkdirAll(base, 0777)
 		if err != nil {
-			return errors.Wrap(err, "failed to create directory")
+			return "", errors.Wrap(err, "failed to create directory")
 		}
 	}
 
 	// check exist file
 	if _, err := os.Stat(dest); err == nil {
 		as.Logger.Info("Image already exists: " + dest)
-		return nil
+		return extension, nil
 	}
 
 	// Prepare a new file
 	file, err := os.Create(dest)
 	if err != nil {
-		return errors.Wrap(err, "failed to create file")
+		return "", errors.Wrap(err, "failed to create file")
 	}
 	defer file.Close()
 
 	// Write the body to file
 	written, err := io.Copy(file, resp.Body)
 	if err != nil {
-		return errors.Wrap(err, "failed to write body")
+		return "", errors.Wrap(err, "failed to write body")
 	}
 	as.Logger.Info("Download complete. image: " + dest + " (" + fmt.Sprintf("%d", written) + " bytes)")
-	return nil
+	return extension, nil
 }
 
 func (as ArticleService) ExportArticle(article *model.Article, id string) error {
