@@ -109,7 +109,7 @@ func (as ArticleService) IssueToArticle(issue *github.Issue) (*model.Article, er
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to download image")
 		}
-		replaced = fmt.Sprintf("![%s](/images/%s/%d%s)", url, id, i, contentType)
+		replaced = fmt.Sprintf("![/images/%s/%d%s](/images/%s/%d%s)", id, i, contentType, id, i, contentType)
 
 		// Replace url to local path
 		content = strings.Replace(content, before, replaced, -1)
@@ -127,7 +127,7 @@ func (as ArticleService) IssueToArticle(issue *github.Issue) (*model.Article, er
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to download image")
 		}
-		replaced = fmt.Sprintf("![%s](/images/%s/%d%s)", url, id, i, contentType)
+		replaced = fmt.Sprintf("![/images/%s/%d%s](/images/%s/%d%s)", id, i, contentType, id, i, contentType)
 
 		content = strings.Replace(content, before, replaced, -1)
 	}
