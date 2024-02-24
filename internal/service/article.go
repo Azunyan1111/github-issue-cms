@@ -107,7 +107,7 @@ func (as ArticleService) IssueToArticle(issue *github.Issue) (*model.Article, er
 		// Download image
 		contentType, err := as.downloadImage(url, id, fmt.Sprint(i))
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to download image")
+			as.Logger.Error("Failed to download image: " + url)
 		}
 		replaced = fmt.Sprintf("![/images/%s/%d%s](/images/%s/%d%s)", id, i, contentType, id, i, contentType)
 
@@ -125,7 +125,7 @@ func (as ArticleService) IssueToArticle(issue *github.Issue) (*model.Article, er
 
 		contentType, err := as.downloadImage(url, id, fmt.Sprint(i))
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to download image")
+			as.Logger.Error("Failed to download image: " + url)
 		}
 		replaced = fmt.Sprintf("![/images/%s/%d%s](/images/%s/%d%s)", id, i, contentType, id, i, contentType)
 
