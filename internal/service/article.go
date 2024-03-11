@@ -249,6 +249,9 @@ func (as ArticleService) ExportArticle(article *model.Article, id string) error 
 	for _, t := range article.Tags {
 		tags += "  - " + t + "\n"
 	}
+	if tags == "" {
+		tags = "  - \n"
+	}
 	content := strings.TrimSpace(fmt.Sprintf(`
 ---
 title: %s
