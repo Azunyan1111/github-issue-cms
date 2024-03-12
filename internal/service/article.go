@@ -247,19 +247,19 @@ func (as ArticleService) ExportArticle(article *model.Article, id string) error 
 	// Build string
 	var tags string
 	for _, t := range article.Tags {
-		tags += "  - " + t + "\n"
+		tags += " - '" + t + "'\n"
 	}
 	if tags == "" {
-		tags = "  - \n"
+		tags = " -\n"
 	}
 	content := strings.TrimSpace(fmt.Sprintf(`
 ---
-title: %s
-author: %s
-date: %s
-draft: %t
+title: '%s'
+author: '%s'
+date: '%s'
+draft: '%t'
 categories:
- - %s
+ - '%s'
 tags:
 %s
 %s
