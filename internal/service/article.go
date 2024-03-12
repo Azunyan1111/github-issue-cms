@@ -49,7 +49,7 @@ func (as ArticleService) IssueToArticle(issue *github.Issue) (*model.Article, er
 
 	// Get front matter
 	frontMatter := func() []string {
-		re := regexp.MustCompile("(?s)^\\s*```[\\n|\\r]([^`]*)[\\n|\\r]```")
+		re := regexp.MustCompile("(?s)^\\s*```\\r?\\n(.*?)\\r?\\n```")
 		match := re.FindStringSubmatch(content)
 		if len(match) > 0 {
 			return match
