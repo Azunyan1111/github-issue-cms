@@ -171,6 +171,12 @@ func (as ArticleService) downloadImage(url string, articleID string, filename st
 	}
 	defer resp.Body.Close()
 
+	// Check Redirect
+	if resp.StatusCode == 301 || resp.StatusCode == 302 {
+		as.Logger.Info("Redirected to: " + resp.Header.Get("Location"))
+		return as.downloadImage(resp.Header.Get("Location"), articleID, filename)
+	}
+
 	// Check response
 	var extension string
 	contentType := resp.Header.Get("Content-Type")
