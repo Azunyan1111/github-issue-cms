@@ -188,7 +188,7 @@ func (as ArticleService) downloadImage(url string, articleID string, filename st
 	case "image/gif":
 		extension = ".gif"
 	default:
-		return "", errors.New("unsupported content type")
+		return "", errors.New(fmt.Sprintf("unsupported content type:%v,%v,%v", contentType, resp.Status, resp.StatusCode))
 	}
 	if resp.StatusCode != 200 {
 		as.Logger.Error(fmt.Sprintf("Response: %d %s", resp.StatusCode, contentType))
